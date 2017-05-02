@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
-	"log"
 	"os"
 
+	"github.com/foecum/gotei2.0/logger"
 	"github.com/foecum/gotei2.0/templates"
 	"github.com/urfave/cli"
 )
@@ -16,6 +16,8 @@ type appContent struct {
 	Port    int
 }
 
+var log = logger.New()
+
 func main() {
 	app := cli.NewApp()
 	app.Version = "1.0.0"
@@ -23,11 +25,11 @@ func main() {
 		{
 			Name:    "new",
 			Aliases: []string{"-n"},
-			Usage:   "Create a new web app project",
+			Usage:   "A live reload tool for development web apps written in go. Create a new web app project",
 			Action: func(c *cli.Context) error {
 				projectName := c.Args().First()
 				if len(projectName) < 1 {
-					log.Println("argument [appname|controller|model] is missing")
+					log.Error("argument [appname|controller|model] is missing")
 					return nil
 				}
 				projectPath := os.Getenv("GOPATH") + "/src/" + projectName
@@ -39,16 +41,16 @@ func main() {
 
 						if err = createProjectStructure(projectPath, appContent{AppName: projectName, Port: 8080}); err != nil {
 							os.RemoveAll(projectPath)
-							fmt.Println(err)
-							fmt.Printf("An error occurred while creating your project\n")
+							log.Error("An error occurred while creating your project")
+							log.Error(err.Error())
 							return nil
 						}
-						fmt.Printf("Your new Application was created\n")
+						log.Success("Your new Application was created")
 						return nil
 					}
 				}
 
-				fmt.Printf("Directory %s already exists\n", projectPath)
+				log.Warning(fmt.Sprintf("Directory %s already exists", projectPath))
 				return nil
 			},
 			Subcommands: []cli.Command{
@@ -91,7 +93,7 @@ func createProjectStructure(path string, projectMeta appContent) error {
 		_, err := os.Stat(folderPath)
 		if err != nil {
 			if os.IsNotExist(err) {
-				fmt.Printf("Create %s\n", folderPath)
+				log.Success(fmt.Sprintf("Create %s", folderPath))
 				os.MkdirAll(folderPath, os.ModePerm)
 				if err = createTemplateFiles(folderPath+string(os.PathSeparator)+folders[i]+".go", templatesContent[folders[i]], projectMeta); err != nil {
 					return err
