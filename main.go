@@ -11,6 +11,11 @@ import (
 	"github.com/urfave/cli"
 )
 
+type appContent struct {
+	AppName string
+	Port    int
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Version = "1.0.0"
@@ -32,7 +37,7 @@ func main() {
 						fmt.Printf("Creating %s\n", projectPath)
 						os.MkdirAll(projectPath, os.ModePerm)
 
-						if err = createProjectStructure(projectPath, projectName); err != nil {
+						if err = createProjectStructure(projectPath, appContent{AppName: projectName, Port: 8080}); err != nil {
 							os.RemoveAll(projectPath)
 							fmt.Println(err)
 							fmt.Printf("An error occurred while creating your project\n")
@@ -77,7 +82,7 @@ func main() {
 	app.Run(os.Args)
 }
 
-func createProjectStructure(path, projectName string) error {
+func createProjectStructure(path string, projectMeta appContent) error {
 	folders := []string{"controllers", "models", "routers", "public", "views", "tests"}
 	templatesContent := templates.GetTemplateContent()
 
@@ -88,7 +93,7 @@ func createProjectStructure(path, projectName string) error {
 			if os.IsNotExist(err) {
 				fmt.Printf("Create %s\n", folderPath)
 				os.MkdirAll(folderPath, os.ModePerm)
-				if err = createTemplateFiles(folderPath+string(os.PathSeparator)+folders[i]+".go", templatesContent[folders[i]], projectName); err != nil {
+				if err = createTemplateFiles(folderPath+string(os.PathSeparator)+folders[i]+".go", templatesContent[folders[i]], projectMeta); err != nil {
 					return err
 				}
 			} else {
@@ -97,13 +102,13 @@ func createProjectStructure(path, projectName string) error {
 		}
 	}
 
-	if err := createTemplateFiles(path+string(os.PathSeparator)+"main.go", templatesContent["main"], projectName); err != nil {
+	if err := createTemplateFiles(path+string(os.PathSeparator)+"main.go", templatesContent["main"], projectMeta); err != nil {
 		return err
 	}
 	return nil
 }
 
-func createTemplateFiles(fileName, templateContent, appName string) error {
+func createTemplateFiles(fileName, templateContent string, appName appContent) error {
 
 	f, err := os.Create(fileName)
 	if err != nil {
@@ -112,22 +117,15 @@ func createTemplateFiles(fileName, templateContent, appName string) error {
 	defer f.Close()
 
 	var parsedContent bytes.Buffer
-
-	fmt.Println("App Name: ", appName)
-	if appName != "" {
+	if appName.AppName != "" {
 		t := template.New("temp")
 
 		t, err = t.Parse(templateContent)
 		if err != nil {
-			fmt.Println(err)
-		}
-		content := struct {
-			AppName string
-		}{
-			appName,
+			return err
 		}
 
-		t.Execute(&parsedContent, content)
+		t.Execute(&parsedContent, appName)
 		templateContent = parsedContent.String()
 	}
 
