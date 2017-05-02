@@ -1,35 +1,43 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
 	"log"
 	"os"
 
+	"github.com/foecum/gotei2.0/templates"
 	"github.com/urfave/cli"
 )
 
 func main() {
 	app := cli.NewApp()
-
+	app.Version = "1.0.0"
 	app.Commands = []cli.Command{
 		{
 			Name:    "new",
-			Aliases: []string{"n"},
+			Aliases: []string{"-n"},
 			Usage:   "Create a new web app project",
 			Action: func(c *cli.Context) error {
 				projectName := c.Args().First()
 				if len(projectName) < 1 {
-					log.Println("argument <appname> is missing")
+					log.Println("argument [appname|controller|model] is missing")
 					return nil
 				}
 				projectPath := os.Getenv("GOPATH") + "/src/" + projectName
 				_, err := os.Stat(projectPath)
 				if err != nil {
 					if os.IsNotExist(err) {
-						fmt.Printf("Create %s\n", projectPath)
+						fmt.Printf("Creating %s\n", projectPath)
 						os.MkdirAll(projectPath, os.ModePerm)
 
-						createProjectStructure(projectPath)
+						if err = createProjectStructure(projectPath, projectName); err != nil {
+							os.RemoveAll(projectPath)
+							fmt.Println(err)
+							fmt.Printf("An error occurred while creating your project\n")
+							return nil
+						}
 						fmt.Printf("Your new Application was created\n")
 						return nil
 					}
@@ -40,11 +48,18 @@ func main() {
 			},
 			Subcommands: []cli.Command{
 				{
+					Name:  "appname",
+					Usage: "add a new project",
+					Action: func(c *cli.Context) error {
+						fmt.Println(os.Getenv("GOPATH"))
+						return nil
+					},
+				},
+				{
 					Name:  "controller",
 					Usage: "add a new controller to the project",
 					Action: func(c *cli.Context) error {
 						fmt.Println(os.Getenv("GOPATH"))
-						//fmt.Println("new controller added: ", c.Args().First(), " ", os.Getenv("GOPATH"))
 						return nil
 					},
 				},
@@ -62,18 +77,65 @@ func main() {
 	app.Run(os.Args)
 }
 
-func createProjectStructure(path string) {
-	folders := []string{"controllers", "models", "routers", "config", "public", "views", "tests"}
+func createProjectStructure(path, projectName string) error {
+	folders := []string{"controllers", "models", "routers", "public", "views", "tests"}
+	templatesContent := templates.GetTemplateContent()
 
 	for i := range folders {
-		folderPath := path + "/" + folders[i]
+		folderPath := path + string(os.PathSeparator) + folders[i]
 		_, err := os.Stat(folderPath)
-		if err == nil {
-			os.RemoveAll(folderPath)
-		}
-		if os.IsNotExist(err) {
-			fmt.Printf("Create %s\n", folderPath)
-			os.MkdirAll(folderPath, os.ModePerm)
+		if err != nil {
+			if os.IsNotExist(err) {
+				fmt.Printf("Create %s\n", folderPath)
+				os.MkdirAll(folderPath, os.ModePerm)
+				if err = createTemplateFiles(folderPath+string(os.PathSeparator)+folders[i]+".go", templatesContent[folders[i]], projectName); err != nil {
+					return err
+				}
+			} else {
+				return err
+			}
 		}
 	}
+
+	if err := createTemplateFiles(path+string(os.PathSeparator)+"main.go", templatesContent["main"], projectName); err != nil {
+		return err
+	}
+	return nil
+}
+
+func createTemplateFiles(fileName, templateContent, appName string) error {
+
+	f, err := os.Create(fileName)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	var parsedContent bytes.Buffer
+
+	fmt.Println("App Name: ", appName)
+	if appName != "" {
+		t := template.New("temp")
+
+		t, err = t.Parse(templateContent)
+		if err != nil {
+			fmt.Println(err)
+		}
+		content := struct {
+			AppName string
+		}{
+			appName,
+		}
+
+		t.Execute(&parsedContent, content)
+		templateContent = parsedContent.String()
+	}
+
+	_, err = f.Write([]byte(templateContent))
+	if err != nil {
+		return err
+	}
+	f.Sync()
+
+	return nil
 }
