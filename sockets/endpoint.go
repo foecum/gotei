@@ -14,21 +14,31 @@ var (
 	reloadAddress = ":12450"
 )
 
+// GoteiSocket ...
+type GoteiSocket interface {
+	StartReloadServer()
+	startServer()
+	SendReload()
+}
+
+// GoteiSocketActions ...
+type GoteiSocketActions struct{}
+
 var log = logger.New()
 
 // StartReloadServer ...
-func StartReloadServer() {
+func (g *GoteiSocketActions) StartReloadServer() {
 	hub = newHub()
 	go hub.run()
 	http.HandleFunc("/reload", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
 
-	go startServer()
+	go g.startServer()
 	log.Notice(fmt.Sprintf("Reload server listening at %v", reloadAddress))
 }
 
-func startServer() {
+func (g *GoteiSocketActions) startServer() {
 	err := http.ListenAndServe(reloadAddress, nil)
 
 	if err != nil {
@@ -38,7 +48,7 @@ func startServer() {
 }
 
 // SendReload ...
-func SendReload() {
+func (g *GoteiSocketActions) SendReload() {
 	message := bytes.TrimSpace([]byte("reload"))
 	hub.broadcast <- message
 }

@@ -14,10 +14,11 @@ import (
 )
 
 var log = logger.New()
+var goteiSockets sockets.GoteiSocket
 
 // Runner ... Interface with two main functionalities the app implements
 type Runner interface {
-	Run()
+	Run() bool
 	Monitor(cwd string, action func() error) error
 	Kill() error
 }
@@ -42,23 +43,41 @@ func New(path, name string, args []string) Runner {
 	}
 }
 
+// SystemCalls ...
+type SystemCalls interface {
+	Getwd() (string, error)
+}
+
+// SystemCallsImplementation ...
+type SystemCallsImplementation struct {
+}
+
+// Getwd ...
+func (SystemCallsImplementation) Getwd() (string, error) {
+	return os.Getwd()
+}
+
 //Run ...runs the app and monitors file modification times
-func (e *engine) Run() {
-	cwd, err := os.Getwd()
+func (e *engine) Run() bool {
+	sysCall := SystemCallsImplementation{}
+
+	cwd, err := sysCall.Getwd()
 
 	if err != nil {
 		log.Error(err.Error())
-		return
+		return false
 	}
 
 	err = e.start()
 	if err != nil {
 		log.Error(err.Error())
-		return
+		return false
 	}
 
-	sockets.StartReloadServer()
+	goteiSockets.StartReloadServer()
+
 	e.Monitor(cwd, e.restart)
+	return true
 }
 
 func (e *engine) Monitor(cwd string, action func() error) error {
@@ -107,7 +126,7 @@ func (e *engine) restart() error {
 		return fmt.Errorf("%v", err)
 	}
 
-	sockets.SendReload()
+	goteiSockets.SendReload()
 	log.Success(fmt.Sprintf("%v restarted successfully.", e.name))
 	return nil
 }
