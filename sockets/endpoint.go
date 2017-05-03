@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/foecum/gotei2.0/logger"
+	"github.com/foecum/gotei/logger"
 )
 
 var (

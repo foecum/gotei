@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/foecum/gotei2.0/builder"
-	"github.com/foecum/gotei2.0/logger"
-	"github.com/foecum/gotei2.0/sockets"
+	"github.com/foecum/gotei/builder"
+	"github.com/foecum/gotei/logger"
+	"github.com/foecum/gotei/sockets"
 )
 
 var log = logger.New()

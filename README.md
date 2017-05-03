@@ -1,4 +1,4 @@
-# Gotei2.0
+# Gotei
 A live reload tool for development web apps written in go.
 ## installation
 Install dependencies for the boilerplate app (I need to automate this part)
@@ -7,7 +7,7 @@ Install dependencies for the boilerplate app (I need to automate this part)
     github.com/gorilla/websocket
 
 #### Install Gotei
-    go get github.com/foecum/gotei2.0
+    go get github.com/foecum/gotei
 
 ## Usage
 #### Restart app automatically when you make changes

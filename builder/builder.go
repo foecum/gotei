@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/foecum/gotei2.0/logger"
+	"github.com/foecum/gotei/logger"
 )
 
 //Builder ...

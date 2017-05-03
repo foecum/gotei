@@ -39,7 +39,7 @@ import (
 	"net/http"
   "html/template"
 
-	"github.com/foecum/gotei2.0/templates"
+	"github.com/foecum/gotei/templates"
 )
 // MainControllerGet ...
 func MainControllerGet(w http.ResponseWriter, r *http.Request) {

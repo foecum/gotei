@@ -8,10 +8,10 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/foecum/gotei2.0/builder"
-	"github.com/foecum/gotei2.0/logger"
-	"github.com/foecum/gotei2.0/runner"
-	"github.com/foecum/gotei2.0/templates"
+	"github.com/foecum/gotei/builder"
+	"github.com/foecum/gotei/logger"
+	"github.com/foecum/gotei/runner"
+	"github.com/foecum/gotei/templates"
 	"github.com/urfave/cli"
 )
 
