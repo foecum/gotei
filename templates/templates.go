@@ -1,14 +1,63 @@
 package templates
 
+// LiveReloadJS ...
+//I will add the debug option in the config to remove this for production or if
+//the user doesn't want to use it
+const LiveReloadJS = `<script>function tryConnectToReload(address) {
+  var conn;
+  // This is a statically defined port on which the app is hosting the reload service.
+  conn = new WebSocket("ws://localhost:12450/reload");
+
+  conn.onclose = function(evt) {
+    // The reload endpoint hasn't been started yet, we are retrying in 2 seconds.
+    setTimeout(() => tryConnectToReload(), 2000);
+  };
+
+  conn.onmessage = function(evt) {
+    console.log("Refresh received!");
+
+    // If we uncomment this line, then the page will refresh every time a message is received.
+    //location.reload()
+  };
+}
+
+try {
+  if (window["WebSocket"]) {
+    tryConnectToReload();
+  } else {
+    console.log("Your browser does not support WebSocket, cannot connect to the reload service.");
+  }
+} catch (ex) {
+  console.log('Exception during connecting to reload:', ex);
+}</script>`
+
 const controllerFile = `package controllers
 
 import (
-  "net/http"
-  "fmt"
-)
+	"bytes"
+	"fmt"
+	"net/http"
+  "html/template"
 
-func MainControllerGet(w http.ResponseWriter, r *http.Request){
-  fmt.Fprintf(w, "Hello world")
+	"github.com/foecum/gotei2.0/templates"
+)
+// MainControllerGet ...
+func MainControllerGet(w http.ResponseWriter, r *http.Request) {
+	// fmt.Fprintf(w, "Hello world")
+	writeResponse(w, "Hello world")
+}
+
+func writeResponse(w http.ResponseWriter, content string) {
+	var buffer bytes.Buffer
+	buffer.WriteString(content)
+	buffer.WriteString(templates.LiveReloadJS)
+
+  t, err := template.ParseFiles("edit.html")
+
+  if err != nil{
+    e.
+  }
+	fmt.Fprintf(w, buffer.String())
 }
 `
 

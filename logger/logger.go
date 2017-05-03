@@ -19,32 +19,27 @@ type logger struct {
 	colorMe color.Color
 }
 
-var logPrefix = "[Gotei]: "
+var logPrefix = "[Gotei]▶ "
 
 func (l *logger) Error(msg string) {
-	if len(msg) > 0 {
-		c := color.New(color.FgRed)
-		c.Println(logPrefix + msg)
-	}
+	message(msg, color.FgRed)
 }
 
 func (l *logger) Warning(msg string) {
-	if len(msg) > 0 {
-		c := color.New(color.FgYellow)
-		c.Println(logPrefix + msg)
-	}
+	message(msg, color.FgYellow)
 }
 
 func (l *logger) Notice(msg string) {
-	if len(msg) > 0 {
-		c := color.New(color.FgBlue)
-		c.Println(logPrefix + msg)
-	}
+	message(msg, color.FgBlue)
 }
 
 func (l *logger) Success(msg string) {
+	message(msg, color.FgGreen)
+}
+
+func message(msg string, clr color.Attribute) {
 	if len(msg) > 0 {
-		c := color.New(color.FgGreen)
+		c := color.New(clr)
 		c.Println(logPrefix + msg)
 	}
 }

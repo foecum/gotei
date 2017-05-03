@@ -8,9 +8,9 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/foecum/gotei/builder"
-	"github.com/foecum/gotei/runner"
+	"github.com/foecum/gotei2.0/builder"
 	"github.com/foecum/gotei2.0/logger"
+	"github.com/foecum/gotei2.0/runner"
 	"github.com/foecum/gotei2.0/templates"
 	"github.com/urfave/cli"
 )
@@ -142,11 +142,13 @@ func goteiInstallAction(c *cli.Context) {
 func goteiAction(c *cli.Context) {
 	log.Notice("Building application.")
 	build := builder.New(path, pkgName, false)
+
 	err := build.Build()
 	if err != nil {
 		log.Error(err.Error())
 		return
 	}
+
 	log.Success("Build run successfully")
 	app := runner.New(path, pkgName, c.Args())
 	app.Run()

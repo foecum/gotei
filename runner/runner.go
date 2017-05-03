@@ -8,8 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/foecum/gotei/builder"
-	"github.com/foecum/gotei/logger"
+	"github.com/foecum/gotei2.0/builder"
+	"github.com/foecum/gotei2.0/logger"
+	"github.com/foecum/gotei2.0/sockets"
 )
 
 var log = logger.New()
@@ -27,6 +28,7 @@ type engine struct {
 	args      []string
 	beginning time.Time
 	builder   builder.Builder
+	appMeta   map[string]interface{}
 }
 
 //New ...created a new instance of engine
@@ -36,6 +38,7 @@ func New(path, name string, args []string) Runner {
 		args:      args,
 		beginning: time.Now(),
 		builder:   builder.New(path, name, false),
+		appMeta:   make(map[string]interface{}),
 	}
 }
 
@@ -53,6 +56,8 @@ func (e *engine) Run() {
 		log.Error(err.Error())
 		return
 	}
+
+	sockets.StartReloadServer()
 	e.Monitor(cwd, e.restart)
 }
 
@@ -101,6 +106,8 @@ func (e *engine) restart() error {
 	if err := e.start(); err != nil {
 		return fmt.Errorf("%v", err)
 	}
+
+	sockets.SendReload()
 	log.Success(fmt.Sprintf("%v restarted successfully.", e.name))
 	return nil
 }
@@ -109,10 +116,11 @@ func (e *engine) start() error {
 	log.Notice(fmt.Sprintf("starting %v application", e.name))
 	e.cmd = exec.Command("./" + e.name)
 	err := e.cmd.Start()
-	//e.cmd.Process.Pid
 	if err != nil {
 		return err
 	}
+	cmnd := exec.Command("open", "http//localhost:8080")
+	cmnd.Start()
 	return nil
 }
 
