@@ -14,11 +14,11 @@ import (
 )
 
 var log = logger.New()
-var goteiSockets sockets.GoteiSocket
+var goteiSockets sockets.GoteiSocketActions
 
 // Runner ... Interface with two main functionalities the app implements
 type Runner interface {
-	Run() bool
+	Run(sysCall SystemCalls) bool
 	Monitor(cwd string, action func() error) error
 	Kill() error
 }
@@ -58,9 +58,7 @@ func (SystemCallsImplementation) Getwd() (string, error) {
 }
 
 //Run ...runs the app and monitors file modification times
-func (e *engine) Run() bool {
-	sysCall := SystemCallsImplementation{}
-
+func (e *engine) Run(sysCall SystemCalls) bool {
 	cwd, err := sysCall.Getwd()
 
 	if err != nil {
@@ -74,8 +72,10 @@ func (e *engine) Run() bool {
 		return false
 	}
 
+	goteiSockets := new(sockets.GoteiSocketActions)
 	goteiSockets.StartReloadServer()
 
+	log.Notice("Listening...")
 	e.Monitor(cwd, e.restart)
 	return true
 }
@@ -138,7 +138,7 @@ func (e *engine) start() error {
 	if err != nil {
 		return err
 	}
-	cmnd := exec.Command("open", "http//localhost:8080")
+	cmnd := exec.Command("open", "http//localhost:8081")
 	cmnd.Start()
 	return nil
 }

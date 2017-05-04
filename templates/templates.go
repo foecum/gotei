@@ -17,7 +17,8 @@ const LiveReloadJS = `<script>function tryConnectToReload(address) {
     console.log("Refresh received!");
 
     // If we uncomment this line, then the page will refresh every time a message is received.
-    //location.reload()
+    console.log("Refreshing the browser...")
+    location.reload()
   };
 }
 
@@ -41,6 +42,8 @@ import (
 
 	"github.com/foecum/gotei/templates"
 )
+
+const liveReloadTemplate = ` + LiveReloadJS + `
 // MainControllerGet ...
 func MainControllerGet(w http.ResponseWriter, r *http.Request) {
 	// fmt.Fprintf(w, "Hello world")
@@ -50,13 +53,9 @@ func MainControllerGet(w http.ResponseWriter, r *http.Request) {
 func writeResponse(w http.ResponseWriter, content string) {
 	var buffer bytes.Buffer
 	buffer.WriteString(content)
-	buffer.WriteString(templates.LiveReloadJS)
+	buffer.WriteString(liveReloadTemplate)
 
-  t, err := template.ParseFiles("edit.html")
-
-  if err != nil{
-    e.
-  }
+  w.Header().Add("Content-Type", "text/html")
 	fmt.Fprintf(w, buffer.String())
 }
 `

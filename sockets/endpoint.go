@@ -50,5 +50,6 @@ func (g *GoteiSocketActions) startServer() {
 // SendReload ...
 func (g *GoteiSocketActions) SendReload() {
 	message := bytes.TrimSpace([]byte("reload"))
+	log.Notice(string(message))
 	hub.broadcast <- message
 }

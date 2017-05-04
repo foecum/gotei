@@ -122,7 +122,6 @@ func goteiNewAppAction(c *cli.Context) error {
 				return nil
 			}
 			log.Success("Your new Application was created")
-			goteiAction(c)
 			return nil
 		}
 	}
@@ -151,7 +150,7 @@ func goteiAction(c *cli.Context) {
 
 	log.Success("Build run successfully")
 	app := runner.New(path, pkgName, c.Args())
-	app.Run()
+	app.Run(runner.SystemCallsImplementation{})
 
 	log.Notice("Exiting application.")
 }
